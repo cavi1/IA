@@ -122,11 +122,11 @@ class Agente():
 
 class EstrategiaBFS:##busqueda en achura, expande primero los nodos menos profundos
     def extraer(self, frontera):
-        # BFS usa FIFO (cola): saca el primero que entró [5]
+        # BFS usa FIFO (cola): saca el primero que entró
         return frontera.pop(0)
     
     def agregar(self, frontera, nodo):
-        # BFS agrega al final [5]
+        # BFS agrega al final
         frontera.append(nodo)
 
 class EstrategiaDFS:##busqueda en profundidad, expande el recorrido hasta el ultimo nodo de la tira y luego regresa en caso de no haber llegado a la solucion y repite con el siguiente
@@ -161,7 +161,7 @@ agente.imprimir_mapa()
 agente.get_recorridos()
 
 print("-----------DFS-----------")
-  
+
 entorno2= Entorno()        
 estrategia2= EstrategiaDFS()## se puede observar que de casualidad realiza el recorrido mas optimo
 agente2= Agente(entorno2,estrategia2)##pero esto esta influenciado por 1) el orden en el que se almacnan las posiciones en get_sucesores                                   

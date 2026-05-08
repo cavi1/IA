@@ -10,7 +10,7 @@ import heapq
 
 class Entorno():
     def __init__(self):
-        self.mapa= [
+        self.mapa= [##el mapa no tiene un camino para llegar a la meta
         "###############",
         "#S      #     #",
         "# ##### # ### #",
@@ -70,8 +70,10 @@ class Agente():
         self.meta = self.entorno.get_estado_final() # Guardamos la meta para la heurística
         
         # Inicializamos con el h del estado inicial
-        h_inicial = self._calcular_manhattan(self.entorno.get_estado_inicial())
-        self.frontera = [Nodo(self.entorno.get_estado_inicial(), h=h_inicial)]
+        estado_inicial = self.entorno.get_estado_inicial()
+        h_inicial = self._calcular_manhattan(estado_inicial)
+        f_inicial = self.estrategia.calcular_f(0, h_inicial)
+        self.frontera = [Nodo(estado_inicial, f=f_inicial, h=h_inicial)]
         
         self.explorados = set()
         self.recorrido = []
@@ -85,7 +87,7 @@ class Agente():
 
     def busqueda(self):
         while self.frontera:
-            # La estrategia extrae según f(n) que definimos en el Nodo
+            # en greedy saca el que tiene menor manhattan, en A* el de menor manhattan y menor costo acumulado
             nodo_actual = self.estrategia.extraer(self.frontera)
             
             if nodo_actual.estado == self.meta:
@@ -105,13 +107,15 @@ class Agente():
                     # h(n) es la estimación heurística hasta la meta [2]
                     h_hijo = self._calcular_manhattan(estado_hijo)
                     
+                    f_hijo = self.estrategia.calcular_f(costo_hijo, h_hijo)
                     nuevo_hijo = Nodo(
-                        estado_hijo, 
-                        padre=nodo_actual, 
-                        g=costo_hijo, 
+                        estado_hijo,
+                        f=f_hijo,
+                        padre=nodo_actual,
+                        g=costo_hijo,
                         h=h_hijo
                     )
-                    self.estrategia.agregar(self.frontera, nuevo_hijo)
+                    self.estrategia.agregar(self.frontera, nuevo_hijo)##agrega cada uno de los nodos sucesores a la frontera y les calcula el manhattan
         return None
     
     def get_recorridos(self):
@@ -123,34 +127,51 @@ class Agente():
 
     
 class Nodo():
-    def __init__(self, estado, algoritmo, padre=None, g=0, h=0):
+    def __init__(self, estado, f, padre=None, g=0, h=0):
         self.estado = estado
         self.padre = padre
         self.g = g  # Costo real acumulado
         self.h = h  # Estimación heurística
-        
-        # Ajustamos f según el algoritmo
-        if algoritmo == "Greedy":
-            self.f = h
-        else:
-            self.f = g + h 
+        self.f = f  # Evaluación según la estrategia
 
     def __lt__(self, otro):
-        # heapq usará f para ordenar la cola de prioridad
         return self.f < otro.f
 
 
 class EstrategiaGreedy:
+    def calcular_f(self, _g, h):
+        return h
+
     def extraer(self, frontera):
-        # Correcto: saca el de menor f (que para Greedy es h)
         return heapq.heappop(frontera)
-    
+
     def agregar(self, frontera, nodo):
         heapq.heappush(frontera, nodo)
 
 
+class EstrategiaAStar:
+    def calcular_f(self, g, h):
+        return g + h  # f(n) = g(n) + h(n)
 
-agente1=Agente(Entorno,EstrategiaGreedy)
+    def extraer(self, frontera):
+        return heapq.heappop(frontera)
+
+    def agregar(self, frontera, nodo):
+        heapq.heappush(frontera, nodo)
+
+
+print("Greedy")
+entorno1 = Entorno()
+estrategia1 = EstrategiaGreedy()
+agente1 = Agente(entorno1, estrategia1)
 agente1.busqueda()
 agente1.get_recorridos()
 agente1.imprimir_mapa()
+
+print("A*")
+entorno2 = Entorno()
+estrategia2 = EstrategiaAStar()
+agente2 = Agente(entorno2, estrategia2)
+agente2.busqueda()
+agente2.get_recorridos()
+agente2.imprimir_mapa()
